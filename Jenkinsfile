@@ -67,10 +67,12 @@ pipeline{
         }
     }
         stage("Deploy Stagin"){
+        steps{    
         withEnv(["DOCKER_HOST=${staging_docker_host}"]) {
             sshagent( credentials: ['docker-host']) {
                 sh "sudo docker run -d -p 80:9099 dhanshri1994/$JOB_NAME:latest"
             }
+        }
         }
     }
 }
