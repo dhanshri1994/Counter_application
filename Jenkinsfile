@@ -59,7 +59,9 @@ pipeline{
         }
         stage("Push image to docker"){
             steps{
-                sh 'docker image push dhanshri1994/$JOB_NAME:v1.$BUILD_ID'
+                withDockerRegistry([ credentialsId: "docker", url: "" ]) {
+                    sh 'docker image push dhanshri1994/$JOB_NAME:v1.$BUILD_ID'
+                    sh 'docker image push dhanshri1994/$JOB_NAME:latest'
             }
         }
     }
