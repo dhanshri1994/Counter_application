@@ -1,105 +1,61 @@
 pipeline{
-
-    agent any 
-
+    agent any
+    tools { 
+      maven 'mvn' 
+    }
     stages{
-
-        stage('Git Checkout'){
-           
+        stage("git checkout"){
             steps{
-
+                git branch: 'main', url: 'https://github.com/dhanshri1994/Counter_application.git'
+            }
+        }
+        stage("unit testing"){
+            steps{
+                sh 'mvn test'
+            }
+        }
+        stage("Intergration testing"){
+            steps{
+                sh 'mvn verify -DskipUnitTests'
+            }
+        }
+        stage("Static Code analysis"){
+            steps{
                 script{
-                 
-                 git branch: 'main', url: 'https://github.com/vikash-kumar01/Counter_application.git'
-
+                   
+                    withSonarQubeEnv(credentialsId: 'sonar') {
+                     
+                        sh 'mvn clean package sonar:sonar'
+                    }
                 }
             }
         }
-        stage('Unit Test'){
+        stage("Quality gate stats"){
+            steps{
+                script{
 
-             steps{
-
-              script{
-                   
-                   sh 'mvn test'
-
+                    waitForQualityGate abortPipeline: false, credentialsId: 'sonar'
                 }
-             }
+            }
         }
-        stage('Integration Test'){
-
-             steps{
-
-              script{
-                   
-                   sh 'mvn verify -DskipUnitTests'
-
-                }
-             }
+        stage("Maven Build"){
+            steps{
+                sh 'mvn clean install'
+            }
         }
-        stage('Static Code Analysis'){
-
-             steps{
-
-              script{
-                   
-                  withSonarQubeEnv(credentialsId: 'sonar-api') {
-                     
-                     sh 'mvn clean package sonar:sonar'
-                  }
+        stage("upload file to nexus"){
+            steps{
+                script{
+                    nexusArtifactUploader artifacts: [[artifactId: 'springboot', classifier: '', file: 'target/Uber.jar', type: 'jar']], credentialsId: 'admin-nexus', groupId: 'com.example', nexusUrl: '3.239.108.2:8081', nexusVersion: 'nexus3', protocol: 'http', repository: 'demoapp-release', version: '1.0.0'
                 }
-             }
+            }
         }
-        stage('Quality Gate status Check'){
-
-             steps{
-
-              script{
-                   
-                   waitForQualityGate abortPipeline: false, credentialsId: 'sonar-api'
-
-                }
-             }
+        stage("Docker Build"){
+            steps{
+                sh 'docker image build -t $JOB_NAME:v1.$BUILD_ID .'
+                sh 'docker image tag $JOB_NAME:v1.$BUILD_ID dhanshri1994/$JOB_NAME:v1.$BUILD_ID'
+                sh 'docker image tag $JOB_NAME:v1.$BUILD_ID dhanshri1994/$JOB_NAME:latest'
+            }
         }
-        stage('Maven Build'){
-
-             steps{
-
-              script{
-                   
-                   sh 'mvn clean install'
-
-                }
-             }
-        }
-        stage('Docker image Building'){
-
-             steps{
-
-              script{
-                   
-                   sh 'docker image build -t $JOB_NAME:v1.$BUILD_ID .'
-                   sh 'docker image tag $JOB_NAME:v1.$BUILD_ID vikashashoke/$JOB_NAME:v1.$BUILD_ID'
-                   sh 'docker image tag $JOB_NAME:v1.$BUILD_ID vikashashoke/$JOB_NAME:latest'
-
-                }
-             }
-        }
-        stage('Docker image push'){
-
-             steps{
-
-              script{
-                   withCredentials([string(credentialsId: 'dockerhub_passwd', variable: 'dockerhub_passwd')]) {
-                     
-                     sh 'docker login -u vikashashoke -p ${dockerhub_passwd}'
-                     sh 'docker image push vikashashoke/$JOB_NAME:v1.$BUILD_ID'
-                     sh 'docker image push vikashashoke/$JOB_NAME:latest'
-                  }
-                }
-             }
-        }        
     }
 }
-
-// squ_531616e45ae941db981c0e09f5721d0ca515e4d4
