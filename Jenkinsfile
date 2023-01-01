@@ -57,5 +57,10 @@ pipeline{
                 sh 'docker image tag $JOB_NAME:v1.$BUILD_ID dhanshri1994/$JOB_NAME:latest'
             }
         }
+        stage("Push image to docker"){
+            steps{
+                sh 'docker image push dhanshri1994/$JOB_NAME:v1.$BUILD_ID'
+            }
+        }
     }
 }
