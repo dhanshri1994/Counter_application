@@ -1,4 +1,4 @@
-final String staging_docker_host = "ssh://jenkins@172.31.88.1" 
+final String staging_docker_host = "ssh://ec2-user@172.31.88.1" 
 pipeline{
     agent any
     tools { 
