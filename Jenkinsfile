@@ -67,13 +67,10 @@ pipeline{
         }
     }
         stage("Deploy Stagin"){
-        steps{    
-        withEnv(["DOCKER_HOST=${staging_docker_host}"]) {
-            sshagent( credentials: ['docker-host']) {
-                sh "ssh -o StrictHostKeyChecking=no docker run -d -p 80:9099 dhanshri1994/$JOB_NAME:latest"
+        steps {
+                sh "docker -H ssh://jenkins@172.31.88.1 run -d -p 80:9099 dhanshri1994/java-application:latest"
+ 
             }
-        }
-        }
     }
 }
 }
