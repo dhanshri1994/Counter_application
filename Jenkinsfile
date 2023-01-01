@@ -1,4 +1,3 @@
-final String staging_docker_host = "ssh://ec2-user@172.31.88.1" 
 pipeline{
     agent any
     tools { 
@@ -67,10 +66,11 @@ pipeline{
         }
     }
         stage("Deploy Stagin"){
-        steps {
-                sh "docker -H ssh://ec2-user@172.31.88.1 run -d -p 80:9099 dhanshri1994/java-application:latest"
- 
+            steps {
+            sshagent(credentials: ['docker-host']) {
+            sh "ssh -o StrictHostKeyChecking=no -l ec2-user 172.31.88.1 'sudo docker run -d -p 80:9099 dhanshri1994/java-application:latest'"
             }
+        }
     }
 }
 }
