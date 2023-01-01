@@ -1,3 +1,4 @@
+final String staging_docker_host = "ssh://jenkins@172.31.88.1" 
 pipeline{
     agent any
     tools { 
@@ -62,6 +63,13 @@ pipeline{
                 withDockerRegistry([ credentialsId: "docker", url: "" ]) {
                     sh 'docker image push dhanshri1994/$JOB_NAME:v1.$BUILD_ID'
                     sh 'docker image push dhanshri1994/$JOB_NAME:latest'
+            }
+        }
+    }
+        stage("Deploy Stagin"){
+        withEnv(["DOCKER_HOST=${staging_docker_host}"]) {
+            sshagent( credentials: ['docker-host']) {
+                sh "sudo docker run -d -p 80:9099 dhanshri1994/$JOB_NAME:latest"
             }
         }
     }
