@@ -68,7 +68,7 @@ pipeline{
     }
         stage("Deploy Stagin"){
         steps {
-                sh "docker -H ssh://jenkins@172.31.88.1 run -d -p 80:9099 dhanshri1994/java-application:latest"
+                sh "docker -H ssh://ec2-user@172.31.88.1 run -d -p 80:9099 dhanshri1994/java-application:latest"
  
             }
     }
